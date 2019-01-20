@@ -142,7 +142,7 @@ body {
 .loader {
   margin: 5rem auto;
   text-align: center; }
-  .loader svg {
+  .loader svg, .loader img {
     height: 5.5rem;
     width: 5.5rem;
     fill: #F59A83;

@@ -25,11 +25,72 @@ export default class Recipe {
     calcTime() {
         //15 min = 3 ingredients (only for example)
         const numberIng = this.ingredients.length;
-        const periods = Math.ceil(num / 3);
+        const periods = Math.ceil(numberIng / 3);
         this.time = periods * 15;
     }
 
     calcServings() {
         this.servings = 4;
+    }
+
+    parseIngredients() {
+        const unitsLong = ['tablespoons', 'tablespoon', 'ounces', 'ounce', 'teaspoons', 'teaspoon', 'cups', 'pounds'];
+        const unitsShort = ['tbsp', 'tbsp', 'oz', 'oz', 'tsp', 'tsp', 'cup', 'pound'];
+
+        const newIngredients = this.ingredients.map(el => {
+            //1 Uniform units
+            let ingredient = el.toLowerCase();
+            unitsLong.forEach((unit, i) => {
+                ingredient = ingredient.replace(unit, unitsShort[i]);
+            })
+
+            //2 Remove parenthesis
+            ingredient = ingredient.replace(/ *\([^)]*\) */g, ' ');
+
+            //3 Parse ingredients into count, unit and ingredient
+            const arrIng = ingredient.split(' ');
+            const unitIndex = arrIng.findIndex(el2 => unitsShort.includes(el2));
+
+            let objIng;
+            if (unitIndex > -1) {
+                //has a unit
+                //example - 4 1/2, arrCount = ['4', '1/2']; eval '4+1/2' - evaluate to js code = 4.5
+                // 4 cups, arrCount = [4];
+                const arrCount = arrIng.slice(0, unitIndex);
+
+                let count;
+                if(arrCount.length === 1) {
+                    count = eval(arrIng[0].replace('-','+'));
+                }
+                else {
+                    count = eval(arrIng.slice(0, unitIndex).join('+'));
+                }
+
+                objIng = {
+                    count,
+                    unit: arrIng[unitIndex],
+                    ingredient: arrIng.slice(unitIndex + 1).join(' ')
+                }
+            } 
+            else if(parseInt(arrIng[0], 10)) {
+                //there is no unit, but first el is a number
+                objIng = {
+                    count: parseInt(arrIng[0], 10),
+                    unit: '',
+                    ingredient: arrIng.slice(1).join(' ')
+                }                
+            }
+            else if (unitIndex === -1) {
+               //there is no unit and is no a number in 1st position
+               objIng = {
+                   count: '1',
+                   unit: '',
+                   ingredient
+               }
+            }
+
+            return objIng;
+        });
+        this.ingredients = newIngredients;
     }
 }
